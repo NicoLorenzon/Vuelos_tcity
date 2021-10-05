@@ -9,11 +9,17 @@ import datetime
 class BuscadorVuelos:
 
     def set_driver(self):
+        '''
+        set_driver define el navegador y parámentros de lanzamiento
+        '''
         chrome_options = ChromeOptions()
         chrome_options.add_argument('--incognito')
         self.driver = webdriver.Chrome(executable_path='D:/Escritorio/DS/Proyectos/VuelosScrap/chromedriver.exe', options=chrome_options)
 
     def set_pagina(self):
+        '''
+        set_pagina trae el driver y ejecuta la página a buscar
+        '''
         driver = self.driver
         driver.get('https://www.turismocity.com.ar/')
         time.sleep(2)
@@ -90,30 +96,39 @@ if __name__ == '__main__':
     buscador.set_pagina()
     buscador.establecer_Vuelo()
     buscador.obtener_link()
+#########################################################################################
 
+'''
+A partir de este punto se configura y desarrolla el script para que una vez que se obtenga 
+el archivo .txt con el link de vuelos se envíe automaticamente vía mail.
+'''
 import smtplib, ssl, getpass
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email import encoders
 from email.mime.base import MIMEBase
 
-
+# Login, asunto, destinatario
 usuario = '*******@gmail.com'
 password = '******'
 destinatario = '********@hotmail.com'
 asunto = 'Link de Vuelos'
 
-mensaje = MIMEMultipart('alternative') # estandar
+# Configuración del mensaje 
+mensaje = MIMEMultipart('alternative')
 mensaje['subject'] = asunto
 mensaje['From'] = usuario
 mensaje['To'] = destinatario
 
+# Archivo a enviar
 archivo = 'Link de ofertas Ezeiza-Ciudad de Mexico.txt'
 
+# Adjuntar el archivo
 with open(archivo, "rb") as adjunto:
     contenido_adjunto = MIMEBase('application', 'octet-stream')
     contenido_adjunto.set_payload(adjunto.read())
 
+# Encoding base 64 para no tener error de lectura
 encoders.encode_base64(contenido_adjunto)
 
 contenido_adjunto.add_header(
@@ -121,9 +136,11 @@ contenido_adjunto.add_header(
     f"attachment; filename= {archivo}",
 )
 
+# Archivo del mensaje a string
 mensaje.attach(contenido_adjunto)
 mensaje_final= mensaje.as_string()
 
+# Crea la conexion segura, hace Login y envía el mail.
 context = ssl.create_default_context()
 with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
     server.login(usuario,password)
